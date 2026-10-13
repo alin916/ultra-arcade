@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NITRO ARCADE — 24 Mini Games</title>
+<style>
+:root {
+  --bg: #080b16;
+  --panel: #11182b;
+  --line: #2b3b60;
+  --text: #eef4ff;
+  --muted: #91a3c7;
+  --cyan: #54f4e8;
+  --pink: #ff4fa3;
+  --yellow: #ffd166;
+  --green: #8dff9b;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: radial-gradient(ellipse at 20% 0%,#17244a,transparent 45%),
+              radial-gradient(ellipse at 90% 30%,#2a1241,transparent 35%),
+              var(--bg);
+  color: var(--text);
+  font: 16px/1.45 system-ui, Segoe UI, Arial, sans-serif;
+}
+header {
+  padding: 25px 5vw;
+  border-bottom: 1px solid #263454;
+  background: #080b16;
+}
+.top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.brand { font-size: 36px; font-weight: 1000; letter-spacing: 2px; }
+.brand span { color: var(--cyan); }
+.tag { color: var(--muted); }
+.stats { display: flex; gap: 10px; flex-wrap: wrap; }
+.pill {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 8px 13px;
+  background: #10182b;
+}
+.pill b { color: var(--cyan); }
+main { max-width: 1400px; margin: auto; padding: 25px 5vw; }
+.hero { display: grid; grid-template-columns: 1.5fr 1fr; gap: 18px; }
+.heroBox {
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  padding: 24px;
+  background: linear-gradient(130deg,#152544,#111326);
+}
+.hero h1 { font-size: clamp(30px,4vw,45px); line-height: 1.05; }
+.hero p { color: var(--muted); }
+.cta {
+  background: var(--cyan); color: #07101a;
+  border: 0; border-radius: 11px; padding: 12px 18px;
+  font-weight: 900; cursor: pointer;
+}
+.toolbar { display: flex; gap: 10px; margin: 24px 0; flex-wrap: wrap; }
+.toolbar input, .toolbar select {
+  background: #10182b; border: 1px solid var(--line);
+  color: white; padding: 11px; border-radius: 10px; font: inherit;
+}
+.toolbar input { flex: 1; min-width: 190px; }
+.games { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 14px; }
+.game {
+  border: 1px solid var(--line); border-radius: 17px;
+  background: linear-gradient(150deg,#141e34,#0d1222);
+  padding: 17px; min-height: 175px;
+  display: flex; flex-direction: column; transition: .18s;
+}
+.game:hover { transform: translateY(-4px); border-color: var(--cyan); }
+.emoji { font-size: 29px; }
+.game h3 { margin: 9px 0 5px; }
+.game p { color: var(--muted); font-size: 13px; flex: 1; }
+.game button, .action, .choices button {
+  border: 1px solid #344768; background: #1b2944;
+  color: white; border-radius: 9px; padding: 10px;
+  font-weight: 800; cursor: pointer;
+}
+.game button:hover, .action:hover, .choices button:hover {
+  border-color: var(--cyan);
+}
+.overlay {
+  position: fixed; inset: 0; background: #030611ef;
+  z-index: 10; display: none; align-items: center;
+  justify-content: center; padding: 18px;
+}
+.modal {
+  width: min(760px,100%); max-height: 92vh; overflow: auto;
+  border: 1px solid #385075; border-radius: 20px;
+  background: linear-gradient(150deg,#141e34,#090e1b);
+}
+.modalHead {
+  padding: 18px 22px; border-bottom: 1px solid var(--line);
+  display: flex; justify-content: space-between; align-items: center;
+}
+.modalHead h2 { margin: 0; }
+.close { background: #18243b; color: white; padding: 9px; cursor: pointer; }
+.play { padding: 22px; }
+.status {
+  padding: 10px 12px; background: #0a1221;
+  border: 1px solid var(--line); border-radius: 10px;
+  color: var(--cyan); font-weight: 800; margin-bottom: 16px;
+}
+.arena {
+  min-height: 170px; border: 1px dashed #3a4d70;
+  border-radius: 14px; padding: 18px;
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: 13px; text-align: center;
+}
+.arena h3 { margin: 0; font-size: 23px; }
+.arena p { color: var(--muted); }
+.choices { display: flex; gap: 9px; flex-wrap: wrap; justify-content: center; }
+.field {
+  background: #060b15; color: var(--green);
+  border: 1px solid #2a4563; border-radius: 9px;
+  padding: 12px; font: 16px monospace; width: min(420px,100%);
+}
+.bigButton { font-size: 21px; padding: 18px 26px !important; }
+.gridBoard { display: grid; gap: 7px; max-width: 390px; width: 100%; margin: auto; }
+.cell {
+  aspect-ratio: 1; border-radius: 9px; border: 1px solid #304566;
+  background: #17243d; color: white; font-weight: 900;
+  font-size: 18px; cursor: pointer;
+}
+.cell.on { background: var(--cyan); color: #07101a; }
+.cell.bad { background: var(--pink); }
+.note { font-size: 12px; color: var(--muted); text-align: center; margin-top: 12px; }
+@media(max-width:1000px) { .games { grid-template-columns: repeat(3,minmax(0,1fr)); } .hero { grid-template-columns: 1fr; } }
+@media(max-width:700px) { .games { grid-template-columns: repeat(2,minmax(0,1fr)); } }
+@media(max-width:420px) { .games { grid-template-columns: 1fr 1fr; } }
+</style>
+</head>
+<body>
+<header>
+  <div class="top">
+    <div>
+      <div class="brand">NITRO <span>ARCADE</span></div>
+      <div class="tag">24 unique mini-games. One launchpad.</div>
+    </div>
+    <div class="stats">
+      <div class="pill">⭐ XP <b id="xp">0</b></div>
+      <div class="pill">🏆 Best streak <b id="streak">0</b></div>
+      <div class="pill">🎮 Played <b id="played">0</b>/24</div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="heroBox">
+      <h1>READY.<br><span style="color:var(--cyan)">SET. PLAY.</span></h1>
+      <p>Reaction challenges, code-breaking, logic puzzles, memory trials, arcade reflexes and fictional cyber missions.</p>
+      <button class="cta" onclick="launch('reaction')">⚡ PLAY REACTION TEST</button>
+    </div>
+    <div class="heroBox">
+      <h2>⌁ CYBER LAB ⌁</h2>
+      <p>Practice fictional terminal puzzles, signal routing and code cracking. No real systems or networks are accessed.</p>
+      <strong>24 challenges · Mobile ready</strong>
+    </div>
+  </section>
+
+  <div class="toolbar">
+    <input id="search" placeholder="Search games…" oninput="renderGames()">
+    <select id="category" onchange="renderGames()">
+      <option value="all">All categories</option>
+      <option>Reflex</option><option>Cyber Lab</option>
+      <option>Logic</option><option>Memory</option>
+      <option>Arcade</option><option>Creative</option>
+    </select>
+  </div>
+  <h2>Game library <small id="count"></small></h2>
+  <section class="games" id="games"></section>
+</main>
+
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <div class="modalHead">
+      <h2 id="gameTitle">Game</h2>
+      <button class="close" onclick="closeGame()">✕ Close</button>
+    </div>
+    <div class="play">
+      <div class="status" id="status">Ready to play</div>
+      <div class="arena" id="arena"></div>
+      <div class="note" id="note">Beat your best score!</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const G = [
+['reaction','⚡','Reaction Reactor','React when the panel turns green.','Reflex'],
+['colorflip','🎨','Color / Word Clash','Choose the ink color, not the word.','Reflex'],
+['target','🎯','Target Snap','Click 10 targets before time runs out.','Reflex'],
+['stopclock','⏱️','Perfect Second','Stop as close to 5 seconds as possible.','Reflex'],
+['sequence','🔢','Sequence Sprint','Find the missing number.','Logic'],
+['memorygrid','🧠','Memory Matrix','Memorize glowing squares.','Memory'],
+['simon','🟣','Pulse Pattern','Repeat the growing light sequence.','Memory'],
+['oddone','🕵️','Odd Pixel','Find the different symbol.','Reflex'],
+['crack5','🔐','Crack the 5-Digit Code','Break a secret five-digit code.','Cyber Lab'],
+['cipher','🧩','Cipher Shift','Decode a Caesar-shifted word.','Cyber Lab'],
+['terminal','💻','Terminal Logic','Solve fictional terminal riddles.','Cyber Lab'],
+['packetroute','📡','Packet Router','Find the correct route.','Cyber Lab'],
+['firewall','🧱','Firewall Breach','Match the fictional port clue.','Cyber Lab'],
+['keysmith','🗝️','Keysmith','Reproduce the symbol key.','Cyber Lab'],
+['binary','0️⃣','Binary Decoder','Convert binary to decimal.','Cyber Lab'],
+['mathdash','➗','Quick Math Dash','Solve rapid-fire equations.','Logic'],
+['sudoku','▦','Mini Sudoku','Complete a 4×4 Sudoku.','Logic'],
+['wordsmith','⌨️','Word Sprint','Type the displayed word.','Reflex'],
+['rps','✊','Rock Paper Scissors','Beat the computer.','Arcade'],
+['maze','🌀','Maze Escape','Navigate the maze.','Logic'],
+['basket','🏀','Hoop Timing','Shoot at the right power.','Arcade'],
+['planet','🪐','Orbit Keeper','Keep your probe in orbit.','Arcade'],
+['drawmemory','✏️','Sketch Recall','Remember and recreate a shape.','Creative'],
+['hilo','📈','High / Low','Guess the next card.','Arcade']
+];
+
+let xp=0, played=new Set(), bestStreak=0, streak=0, cleanup=null, active=null;
+const $=id=>document.getElementById(id);
+
+function renderGames(){
+ const q=$('search').value.toLowerCase(), c=$('category').value;
+ const list=G.filter(g=>(c==='all'||g[4]===c)&&g.slice(1,4).join(' ').toLowerCase().includes(q));
+ $('games').innerHTML=list.map(g=>`
+ <article class="game">
+ <div class="emoji">${g[1]}</div><h3>${g[2]}</h3><p>${g[3]}</p>
+ <button onclick="launch('${g[0]}')">PLAY NOW ↗</button>
+ </article>`).join('');
+ $('count').textContent=`(${list.length} games)`;
+}
+function updateStats(){
+ $('xp').textContent=xp;
+ $('played').textContent=played.size;
+ $('streak').textContent=bestStreak;
+}
+function reward(n=10){
+ xp+=n; played.add(active); streak++;
+ bestStreak=Math.max(bestStreak,streak); updateStats();
+}
+function fail(){streak=0;updateStats();}
+function closeGame(){
+ if(cleanup){cleanup();cleanup=null;}
+ $('overlay').style.display='none';active=null;
+}
+function setGame(id,title,desc=''){
+ active=id;$('overlay').style.display='flex';
+ $('gameTitle').textContent=title;$('status').textContent=desc;
+ $('arena').innerHTML='';
+}
+function arena(html){$('arena').innerHTML=html;}
+function status(s){$('status').textContent=s;}
+function note(s){$('note').textContent=s;}
+
+function launch(id){
+ if(cleanup){cleanup();cleanup=null;}
+ const games={
+ reaction,colorflip,target,stopclock,sequence,memorygrid,simon,oddone,
+ crack5,cipher,terminal,packetroute,firewall,keysmith,binary,mathdash,
+ sudoku,wordsmith,rps,maze,basket,planet,drawmemory,hilo
+ };
+ if(games[id]) games[id]();
+}
+
+function reaction(){
+ setGame('reaction','⚡ Reaction Reactor','Wait for green — do not jump the gun.');
+ arena(`<p id="msg">Press start, then wait.</p><button class="action" id="rb">START TEST</button>`);
+ let state='idle',t=0,timer;
+ const b=$('rb');
+ b.onclick=()=>{
+  if(state==='idle'){
+   state='wait';b.textContent='WAIT…';
+   timer=setTimeout(()=>{
+    state='go';t=performance.now();b.textContent='TAP NOW!';
+    b.classList.add('bigButton');$('arena').style.background='#064b38';
+   },1000+Math.random()*3500);
+  }else if(state==='wait'){
+   clearTimeout(timer);state='idle';fail();status('False start! Try again.');
+   b.textContent='TRY AGAIN';
+  }else if(state==='go'){
+   let ms=Math.round(performance.now()-t);state='idle';
+   reward(Math.max(5,30-Math.floor(ms/25)));
+   status(`Reaction time: ${ms} ms`);
+   $('msg').textContent=ms<220?'Lightning fast!':'Nice! Try to beat it.';
+   b.textContent='PLAY AGAIN';$('arena').style.background='';
+  }
+ };
+ cleanup=()=>clearTimeout(timer);
+}
+
+function colorflip(){
+ setGame('colorflip','🎨 Color / Word Clash');
+ const colors=['RED','BLUE','GREEN','YELLOW'];
+ const map={RED:'#ff5268',BLUE:'#52a7ff',GREEN:'#4cff9b',YELLOW:'#ffe36e'};
+ let round=0,score=0;
+ function next(){
+  if(round>=8){
+   status(`Finished: ${score}/8 correct`);reward(score*3+5);
+   arena(`<h3>Challenge complete!</h3><p>${score}/8</p><button class="action" onclick="launch('colorflip')">PLAY AGAIN</button>`);return;
+  }
+  round++;
+  let word=colors[Math.floor(Math.random()*4)],ink=colors[Math.floor(Math.random()*4)];
+  arena(`<h3 style="color:${map[ink]};font-size:38px">${word}</h3><p>Choose the ink color · ${round}/8</p><div class="choices">${colors.map(c=>`<button data-c="${c}">${c}</button>`).join('')}</div>`);
+  [...$('arena').querySelectorAll('button')].forEach(b=>b.onclick=()=>{
+   if(b.dataset.c===ink){score++;status('Correct!');}else status('Focus on the ink color.');
+   next();
+  });
+ }
+ next();
+}
+
+function target(){
+ setGame('target','🎯 Target Snap');
+ let hits=0,left=20,ended=false;
+ arena(`<p>Targets hit: <b id="hits">0</b>/10</p><button class="action bigButton" id="tb">🎯</button>`);
+ const b=$('tb');
+ function move(){b.style.transform=`translate(${Math.random()*180-90}px,${Math.random()*50-25}px)`;}
+ b.onclick=()=>{
+  if(ended)return;
+  hits++;$('hits').textContent=hits;move();
+  if(hits>=10){ended=true;clearInterval(tick);reward(25);status('Bullseye!');b.textContent='WINNER';}
+ };
+ const tick=setInterval(()=>{
+  left--;status(`${left}s remaining · ${hits}/10 hits`);
+  if(left<=0&&!ended){ended=true;clearInterval(tick);fail();status(`Time up — ${hits}/10`);b.disabled=true;}
+ },1000);
+ cleanup=()=>clearInterval(tick);
+}
+
+function stopclock(){
+ setGame('stopclock','⏱️ Perfect Second');
+ arena(`<h3 id="clock">0.00</h3><p>Stop at 5.00 seconds.</p><div class="choices"><button id="cs">START</button><button id="ce" disabled>STOP</button></div>`);
+ let start=0,iv;
+ $('cs').onclick=()=>{start=performance.now();$('ce').disabled=false;$('cs').disabled=true;iv=setInterval(()=>$('clock').textContent=((performance.now()-start)/1000).toFixed(2),30);};
+ $('ce').onclick=()=>{
+  clearInterval(iv);let n=(performance.now()-start)/1000,d=Math.abs(n-5);
+  status(`${n.toFixed(2)}s — off by ${d.toFixed(2)}s`);
+  reward(d<.15?30:Math.max(2,15-Math.round(d*3)));
+ };
+ cleanup=()=>clearInterval(iv);
+}
+
+function sequence(){
+ setGame('sequence','🔢 Sequence Sprint');
+ const qs=[
+ [[2,4,6,8,'?'],10,'Add 2'],
+ [[3,6,12,24,'?'],48,'Double each number'],
+ [[1,4,9,16,'?'],25,'Square numbers'],
+ [[2,3,5,8,12,'?'],17,'Add 1, then 2, then 3…'],
+ [[81,27,9,3,'?'],1,'Divide by 3'],
+ [[5,10,20,40,'?'],80,'Double each number']
+ ];
+ const q=qs[Math.floor(Math.random()*qs.length)];
+ arena(`<h3>${q[0].join(' · ')}</h3><p>What comes next?</p><input class="field" id="sa" type="number"><button class="action" id="sg">CHECK</button>`);
+ $('sg').onclick=()=>{
+  if(Number($('sa').value)===q[1]){status('Correct!');reward(15);}
+  else{status('Hint: '+q[2]);fail();}
+  note('Answer: '+q[1]);
+ };
+}
+
+function memorygrid(){
+ setGame('memorygrid','🧠 Memory Matrix');
+ const seq=new Set();while(seq.size<4)seq.add(Math.floor(Math.random()*9));
+ arena(`<p>Memorize the glowing squares!</p><div class="gridBoard" id="mg" style="grid-template-columns:repeat(3,1fr)">${Array.from({length:9},(_,i)=>`<button class="cell ${seq.has(i)?'on':''}" data-i="${i}">${seq.has(i)?'✦':''}</button>`).join('')}</div>`);
+ setTimeout(()=>{
+  if(active!=='memorygrid')return;
+  status('Tap the 4 remembered squares.');
+  $('mg').querySelectorAll('button').forEach(b=>{
+   b.classList.remove('on');b.textContent='';
+   b.onclick=()=>{
+    const i=+b.dataset.i;
+    if(seq.has(i)){seq.delete(i);b.classList.add('on');b.textContent='✓';if(!seq.size){status('Perfect memory!');reward(20);}}
+    else{b.classList.add('bad');b.textContent='×';fail();status('Wrong square!');}
+   };
+  });
+ },1800);
+}
+
+function simon(){
+ setGame('simon','🟣 Pulse Pattern');
+ const seq=Array.from({length:4},()=>Math.floor(Math.random()*4));
+ const colors=['#ff4fa3','#54f4e8','#ffd166','#9b8cff'];
+ const labels=['PINK','CYAN','GOLD','VIOLET'];
+ arena(`<h3>Watch carefully…</h3><div class="choices">${labels.map((l,i)=>`<button class="simon" data-i="${i}" style="min-width:75px;height:65px;background:${colors[i]}">${l}</button>`).join('')}</div>`);
+ const buttons=[...$('arena').querySelectorAll('.simon')];let idx=0,shown=0;
+ function flash(){
+  if(shown>=seq.length){status('Repeat the sequence in order.');return;}
+  let b=buttons[seq[shown++]];b.style.filter='brightness(2)';
+  setTimeout(()=>{b.style.filter='';setTimeout(flash,250);},400);
+ }
+ setTimeout(flash,400);
+ buttons.forEach((b,i)=>b.onclick=()=>{
+  if(shown<seq.length)return;
+  if(i!==seq[idx]){fail();status('Sequence broken.');return;}
+  idx++;if(idx===seq.length){reward(20);status('Pattern mastered!');buttons.forEach(x=>x.disabled=true);}
+ });
+}
+
+function oddone(){
+ setGame('oddone','🕵️ Odd Pixel');
+ const odd=Math.floor(Math.random()*25),sym=Math.random()<.5?['◆','◇']:['●','○'];
+ arena(`<p>Find the odd symbol.</p><div class="gridBoard" style="grid-template-columns:repeat(5,1fr)">${Array.from({length:25},(_,i)=>`<button class="cell" data-i="${i}">${i===odd?sym[1]:sym[0]}</button>`).join('')}</div>`);
+ $('arena').querySelectorAll('button').forEach(b=>b.onclick=()=>{
+  if(+b.dataset.i===odd){b.classList.add('on');status('Found it!');reward(15);}
+  else{b.classList.add('bad');status('Try another symbol.');fail();}
+ });
+}
+
+function crack5(){
+ setGame('crack5','🔐 Crack the 5-Digit Code');
+ let code=[];while(code.length<5){let n=Math.floor(Math.random()*10);if(!code.includes(n))code.push(n);}
+ let tries=0;
+ arena(`<p>Guess 5 unique digits. 🟢 right position · 🟡 wrong position</p><input class="field" id="ci" maxlength="5" inputmode="numeric" placeholder="58310"><button class="action" id="ct">SUBMIT GUESS</button><div id="history"></div>`);
+ $('ct').onclick=()=>{
+  let v=$('ci').value.trim();
+  if(!/^\d{5}$/.test(v)||new Set(v).size!==5){status('Enter 5 different digits.');return;}
+  tries++;let green=0,yellow=0;
+  [...v].forEach((d,i)=>{if(+d===code[i])green++;else if(code.includes(+d))yellow++;});
+  $('history').innerHTML=`<p>Guess ${tries}: <b>${v}</b> — 🟢 ${green} · 🟡 ${yellow}</p>`+$('history').innerHTML;
+  $('ci').value='';
+  if(green===5){status(`ACCESS GRANTED in ${tries} tries!`);reward(Math.max(10,40-tries*3));}
+  else status(`${green} exact · ${yellow} misplaced · ${5-green-yellow} absent`);
+ };
+}
+
+function cipher(){
+ setGame('cipher','🧩 Cipher Shift');
+ const words=['ARCADE','NEBULA','PUZZLE','REACTOR','PIXEL','GALAXY','SIGNAL','ROCKET'];
+ const w=words[Math.floor(Math.random()*words.length)];
+ const enc=[...w].map(c=>String.fromCharCode((c.charCodeAt(0)-65+3)%26+65)).join('');
+ arena(`<h3 style="letter-spacing:6px;color:var(--cyan)">${enc}</h3><p>Shift each letter BACK by 3.</p><input class="field" id="cpi" placeholder="Decoded word"><button class="action" id="cpg">DECODE</button>`);
+ $('cpg').onclick=()=>{
+  if($('cpi').value.trim().toUpperCase()===w){status('Decoded successfully!');reward(15);}
+  else{status('Try shifting each letter back by three.');fail();}
+ };
+}
+
+function terminal(){
+ setGame('terminal','💻 Terminal Logic');
+ const qs=[
+ ['The passphrase is the number of sides on a hexagon.','6'],
+ ['Type the opposite of OFF.','ON'],
+ ['A byte contains how many bits?','8'],
+ ['What comes next: 2, 4, 8, 16, __?','32'],
+ ['What is binary 101 in decimal?','5']
+ ];
+ const q=qs[Math.floor(Math.random()*qs.length)];
+ arena(`<div style="font-family:monospace;color:var(--green)"><p>> NITRO_SANDBOX v1.0</p><p>> ${q[0]}</p><p>> enter answer_</p></div><input class="field" id="ti"><button class="action" id="tg">RUN CHECK</button>`);
+ $('tg').onclick=()=>{
+  if($('ti').value.trim().toUpperCase()===q[1]){status('SIMULATION: ACCESS GRANTED');reward(15);}
+  else{status('SIMULATION: ACCESS DENIED');fail();}
+ };
+}
+
+function packetroute(){
+ setGame('packetroute','📡 Packet Router');
+ const paths=[['START','A','C','CORE'],['START','B','D','CORE'],['START','A','D','CORE']];
+ const good=Math.floor(Math.random()*paths.length);
+ const blocked=['A','B','C','D'].find(x=>!paths[good].includes(x))||'C';
+ arena(`<h3>START → ? → ? → CORE</h3><p>Blocked node: <b style="color:var(--pink)">${blocked}</b></p><div class="choices">${paths.map((p,i)=>`<button data-i="${i}">${p.join(' → ')}</button>`).join('')}</div>`);
+ $('arena').querySelectorAll('button').forEach(b=>b.onclick=()=>{
+  if(+b.dataset.i===good){status('Packet delivered safely!');reward(15);}
+  else{status('Route failed. Avoid the blocked node.');fail();}
+ });
+}
+
+function firewall(){
+ setGame('firewall','🧱 Firewall Breach');
+ const opts=[22,53,80,443,8080],answer=opts[Math.floor(Math.random()*opts.length)];
+ const clues={22:'secure shell (SSH)',53:'domain name service (DNS)',80:'unencrypted web (HTTP)',443:'secure web (HTTPS)',8080:'common alternate web port'};
+ arena(`<h3>Find the port for: ${clues[answer]}</h3><p>Quiz only — no connection is made.</p><div class="choices">${opts.sort(()=>Math.random()-.5).map(n=>`<button data-n="${n}">PORT ${n}</button>`).join('')}</div>`);
+ $('arena').querySelectorAll('button').forEach(b=>b.onclick=()=>{
+  if(+b.dataset.n===answer){status('Correct match!');reward(15);}
+  else{status('Incorrect match.');fail();}
+ });
+}
+
+function keysmith(){
+ setGame('keysmith','🗝️ Keysmith');
+ const syms=['◆','●','▲','★'];
+ const seq=Array.from({length:3},()=>syms[Math.floor(Math.random()*4)]);
+ arena(`<h3 style="font-size:35px;letter-spacing:15px">${seq.join('')}</h3><p>Memorize the key. It disappears in 2 seconds.</p>`);
+ setTimeout(()=>{
+  if(active!=='keysmith')return;
+  let chosen=[];
+  arena(`<h3>Rebuild the 3-symbol key</h3><div class="choices">${syms.map(s=>`<button data-s="${s}" style="font-size:24px">${s}</button>`).join('')}</div><p id="kc">Your key: —</p><button class="action" id="kclear">CLEAR</button><button class="action" id="ksubmit">UNLOCK</button>`);
+  $('arena').querySelectorAll('[data-s]').forEach(b=>b.onclick=()=>{
+   if(chosen.length<3)chosen.push(b.dataset.s);$('kc').textContent='Your key: '+chosen.join(' ');
+  });
+  $('kclear').onclick=()=>{chosen=[];$('kc').textContent='Your key: —';};
+  $('ksubmit').onclick=()=>{
+   if(chosen.join('')===seq.join('')){status('Key accepted!');reward(20);}
+   else{status('Key mismatch.');fail();}
+  };
+ },2000);
+}
+
+function binary(){
+ setGame('binary','0️⃣ Binary Decoder');
+ const n=1+Math.floor(Math.random()*62),b=n.toString(2);
+ arena(`<h3 style="letter-spacing:4px;color:var(--green)">${b}</h3><p>What decimal number is this?</p><input class="field" id="bi" type="number"><button class="action" id="bg">DECODE</button>`);
+ $('bg').onclick=()=>{
+  if(+$('bi').value===n){status('Binary decoded!');reward(15);}
+  else{status('Try place values 1, 2, 4, 8, 16, 32…');fail();}
+ };
+}
+
+function mathdash(){
+ setGame('mathdash','➗ Quick Math Dash');
+ let score=0,left=30,iv;
+ function q(){
+  let a=1+Math.floor(Math.random()*20),b=1+Math.floor(Math.random()*20);
+  let op=['+','−','×'][Math.floor(Math.random()*3)];
+  let ans=op==='+'?a+b:op==='−'?a-b:a*b;
+  arena(`<h3>${a} ${op} ${b} = ?</h3><input class="field" id="mi" type="number"><button class="action" id="mg">SUBMIT</button><p>Score: ${score}</p>`);
+  $('mg').onclick=()=>{if(+$('mi').value===ans){score++;status('Correct!');}else status('Answer was '+ans);q();};
+ }
+ q();
+ iv=setInterval(()=>{
+  left--;status(`${left}s left · Score ${score}`);
+  if(left<=0){clearInterval(iv);status(`Time! Final score: ${score}`);reward(score*2+5);arena(`<h3>Math Dash complete</h3><p>You solved ${score} equations.</p><button class="action" onclick="launch('mathdash')">PLAY AGAIN</button>`);}
+ },1000);
+ cleanup=()=>clearInterval(iv);
+}
+
+function sudoku(){
+ setGame('sudoku','▦ Mini Sudoku');
+ let puzzle=[1,0,0,4,0,4,1,0,2,0,4,0,0,3,0,1];
+ const solution=[1,2,3,4,3,4,1,2,2,1,4,3,4,3,2,1];
+ arena(`<p>Fill each row, column and 2×2 box with 1–4.</p><div class="gridBoard" id="sd" style="grid-template-columns:repeat(4,1fr)">${puzzle.map((n,i)=>`<button class="cell" data-i="${i}">${n||'·'}</button>`).join('')}</div><div class="choices">${[1,2,3,4].map(n=>`<button data-n="${n}">${n}</button>`).join('')}</div><button class="action" id="sc">CHECK BOARD</button>`);
+ let selected=-1;const cells=[...$('sd').querySelectorAll('button')];
+ cells.forEach(b=>b.onclick=()=>{selected=+b.dataset.i;});
+ $('arena').querySelectorAll('[data-n]').forEach(b=>b.onclick=()=>{if(selected<0||puzzle[selected])return;puzzle[selected]=+b.dataset.n;cells[selected].textContent=b.dataset.n;});
+ $('sc').onclick=()=>{if(puzzle.every((n,i)=>n===solution[i])){status('Sudoku solved!');reward(30);}else{status('Some cells are incorrect or empty.');fail();}};
+}
+
+function wordsmith(){
+ setGame('wordsmith','⌨️ Word Sprint');
+ const words=['thunder','velocity','circuit','nebula','firewall','arcade','quantum','pixelated','orbit','reflex'];
+ const w=words[Math.floor(Math.random()*words.length)],start=performance.now();
+ arena(`<h3 style="letter-spacing:3px;color:var(--cyan)">${w}</h3><input class="field" id="wi" placeholder="Type the word"><button class="action" id="wg">SUBMIT</button>`);
+ $('wi').focus();
+ $('wg').onclick=()=>{
+  if($('wi').value===w){let sec=((performance.now()-start)/1000).toFixed(2);status(`Perfect typing · ${sec}s`);reward(Math.max(5,25-Math.floor(+sec)));}
+  else{status('Spelling mismatch — try again.');fail();}
+ };
+}
+
+function rps(){
+ setGame('rps','✊ Rock Paper Scissors');
+ let user=0,bot=0;
+ function draw(){
+  arena(`<h3>You ${user} — ${bot} CPU</h3><p>First to 3 wins.</p><div class="choices">${['rock','paper','scissors'].map(x=>`<button data-m="${x}">${({rock:'✊',paper:'✋',scissors:'✌️'})[x]} ${x}</button>`).join('')}</div>`);
+  $('arena').querySelectorAll('button').forEach(b=>b.onclick=()=>{
+   let u=b.dataset.m,c=['rock','paper','scissors'][Math.floor(Math.random()*3)];
+   let res=u===c?'Draw':({rock:'scissors',paper:'rock',scissors:'paper'})[u]===c?'You win round':'CPU wins round';
+   if(res==='You win round')user++;if(res==='CPU wins round')bot++;
+   status(`You: ${u} · CPU: ${c} — ${res}`);
+   if(user===3||bot===3){
+    if(user>bot)reward(20);else fail();
+    arena(`<h3>${user>bot?'VICTORY':'DEFEAT'}</h3><p>Final ${user}–${bot}</p><button class="action" onclick="launch('rps')">REMATCH</button>`);
+   }else draw();
+  });
+ }
+ draw();
+}
+
+function maze(){
+ setGame('maze','🌀 Maze Escape');
+ const map=['#########','#S#....E#','#.#.###.#','#...#...#','###.#.#.#','#.....#.#','#########'];
+ let pos=[1,1];
+ function draw(){
+  arena(`<div class="gridBoard" style="grid-template-columns:repeat(9,1fr);gap:3px">${map.map((row,y)=>[...row].map((ch,x)=>`<div style="aspect-ratio:1;background:${pos[0]===x&&pos[1]===y?'var(--cyan)':ch==='#'?'#32415b':ch==='E'?'var(--green)':'#101a2b'};display:grid;place-items:center">${pos[0]===x&&pos[1]===y?'●':ch==='E'?'★':''}</div>`).join('')).join('')}</div><div class="choices">${[['↑',0,-1],['←',-1,0],['↓',0,1],['→',1,0]].map(a=>`<button data-x="${a[1]}" data-y="${a[2]}">${a[0]}</button>`).join('')}</div>`);
+  $('arena').querySelectorAll('[data-x]').forEach(b=>b.onclick=()=>move(+b.dataset.x,+b.dataset.y));
+ }
+ function move(dx,dy){
+  let x=pos[0]+dx,y=pos[1]+dy;
+  if(map[y]?.[x]&&map[y][x]!=='#'){
+   pos=[x,y];if(map[y][x]==='E'){status('Escape successful!');reward(25);}draw();
+  }
+ }
+ let key=e=>{if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)){e.preventDefault();move(e.key==='ArrowLeft'?-1:e.key==='ArrowRight'?1:0,e.key==='ArrowUp'?-1:e.key==='ArrowDown'?1:0);}};
+ document.addEventListener('keydown',key);cleanup=()=>document.removeEventListener('keydown',key);draw();
+}
+
+function basket(){
+ setGame('basket','🏀 Hoop Timing');
+ let power=0,dir=1,iv,shots=0,score=0;
+ arena(`<h3 id="pt">Power: 0%</h3><div style="width:90%;height:22px;background:#25334d;border-radius:99px;overflow:hidden"><div id="pb" style="height:100%;width:0%;background:var(--cyan)"></div></div><button class="action bigButton" id="shoot">SHOOT 🏀</button><p id="bs">Shots: 0 · Baskets: 0</p>`);
+ iv=setInterval(()=>{power+=dir*3;if(power>=100||power<=0)dir*=-1;$('pt').textContent='Power: '+power+'%';$('pb').style.width=power+'%';},35);
+ $('shoot').onclick=()=>{
+  if(shots>=5)return;shots++;
+  if(Math.abs(power-70)<=12){score++;status('SWISH! Basket scored!');}
+  else status(power<58?'Short shot!':'Too much power!');
+  $('bs').textContent=`Shots: ${shots} · Baskets: ${score}`;
+  if(shots===5){clearInterval(iv);reward(score*8+5);note(`Final score: ${score}/5. Aim for 70%.`);$('shoot').disabled=true;}
+ };
+ cleanup=()=>clearInterval(iv);
+}
+
+function planet(){
+ setGame('planet','🪐 Orbit Keeper');
+ let pos=50,vel=0,t=15,score=0;
+ arena(`<div style="height:160px;width:160px;border:2px dashed #49618c;border-radius:50%;display:grid;place-items:center;position:relative"><div id="probe" style="position:absolute;left:50%;top:50%;width:15px;height:15px;background:var(--cyan);border-radius:50%"></div>🪐</div><p id="os">Stability: 50%</p><button class="action bigButton" id="boost">BOOST ↑</button>`);
+ let iv=setInterval(()=>{
+  vel+=(Math.random()-.5)*10;pos+=vel*.12;vel*=.94;pos=Math.max(0,Math.min(100,pos));
+  $('probe').style.transform=`translate(-50%,-50%) translateX(${pos-50}px)`;
+  $('os').textContent='Stability: '+Math.round(100-Math.abs(50-pos)*2)+'%';
+  if(Math.abs(pos-50)<20)score++;
+  t--;status(`${t}s left · orbit stability ${Math.round(100-Math.abs(50-pos)*2)}%`);
+  if(t<=0){clearInterval(iv);if(score>8){status('Orbit stable!');reward(25);}else{status('Probe drifted out of orbit.');fail();}}
+ },1000);
+ $('boost').onclick=()=>{vel+=(pos<50?1:-1)*8;};
+ cleanup=()=>clearInterval(iv);
+}
+
+function drawmemory(){
+ setGame('drawmemory','✏️ Sketch Recall');
+ const target=[0,1,5,6,10,15],chosen=new Set();
+ arena(`<p>Memorize the zig-zag shape.</p><div class="gridBoard" id="dg" style="grid-template-columns:repeat(4,1fr)">${Array.from({length:16},(_,i)=>`<button class="cell ${target.includes(i)?'on':''}" data-i="${i}">${target.includes(i)?'◆':''}</button>`).join('')}</div>`);
+ setTimeout(()=>{
+  if(active!=='drawmemory')return;
+  status('Recreate the shape.');
+  $('dg').querySelectorAll('button').forEach(b=>{
+   b.classList.remove('on');b.textContent='';
+   b.onclick=()=>{
+    let i=+b.dataset.i;
+    if(chosen.has(i)){chosen.delete(i);b.classList.remove('on');}
+    else{chosen.add(i);b.classList.add('on');}
+    if(chosen.size===target.length){
+     let ok=target.every(x=>chosen.has(x));
+     status(ok?'Shape recreated!':'Shape differs — close, try again.');
+     if(ok)reward(25);else fail();
+    }
+   };
+  });
+ },1800);
+}
+
+function hilo(){
+ setGame('hilo','📈 High / Low');
+ let cur=1+Math.floor(Math.random()*13),round=0,wins=0;
+ function draw(){
+  arena(`<h3 style="font-size:48px">${['A','2','3','4','5','6','7','8','9','10','J','Q','K'][cur-1]}</h3><p>Card ${round+1}/5 · Wins ${wins}</p><div class="choices"><button data-g="high">⬆ HIGHER</button><button data-g="low">⬇ LOWER</button></div>`);
+  $('arena').querySelectorAll('button').forEach(b=>b.onclick=()=>{
+   let next=1+Math.floor(Math.random()*13),guess=b.dataset.g;
+   let ok=guess==='high'?next>cur:next<cur;
+   round++;if(ok)wins++;
+   status(`Next card: ${next} — ${ok?'Correct!':'Wrong guess.'}`);cur=next;
+   if(round>=5){
+    if(wins>=3)reward(wins*5);else fail();
+    note(`Final: ${wins}/5 correct.`);
+    arena(`<h3>Run complete</h3><p>You got ${wins}/5 right.</p><button class="action" onclick="launch('hilo')">PLAY AGAIN</button>`);
+   }else draw();
+  });
+ }
+ draw();
+}
+
+renderGames();
+updateStats();
+</script>
+</body>
+</html>
